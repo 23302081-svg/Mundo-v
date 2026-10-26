@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mundo V</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<style>
+:root{--bg:#032850;--outer:#021730;--fg:#fff;--btn-bg:#fff;--btn-fg:#000;--blue:#0a8ae0;--err:#ffc9d0;--link:#0b63b5;--cloud-bg:#fff;--cloud-fg:#000;--note:#9fb3c8;--icon:#8ccbff;color-scheme:dark;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme="light"]{--bg:#f3f8fd;--outer:#cddbe9;--fg:#032850;--btn-bg:#032850;--btn-fg:#fff;--err:#b00020;--cloud-bg:#032850;--cloud-fg:#fff;--note:#4a5f78;--icon:#0a5fa8;color-scheme:light}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;background:var(--outer);font-family:"Open Sans",Roboto,Arial,sans-serif;color:var(--fg);display:flex;justify-content:center}
+main{width:100%;max-width:430px;min-height:100vh;background:var(--bg);padding:16px 28px 20px;display:flex;flex-direction:column;align-items:center}
+section[hidden],[hidden]{display:none!important}
+section{width:100%;display:flex;flex-direction:column;align-items:center;flex:1}
+h1{font-size:2.3rem;font-weight:800;margin:8px 0 28px;text-align:center}
+label,.sr{position:absolute;left:-9999px}
+.top{display:flex;justify-content:flex-end;align-items:center;gap:12px;width:100%;min-height:84px}
+.cloud{background:var(--cloud-bg);color:var(--cloud-fg);font-weight:800;font-size:1rem;border-radius:24px;padding:12px 18px;text-align:center;margin:0}
+.star{background:none;border:0;padding:6px;cursor:pointer;width:76px;height:76px;color:var(--blue)}
+.star svg,.bigstar{width:100%;height:100%;display:block}
+.field{position:relative;width:100%;margin-bottom:18px}
+input{width:100%;font:inherit;font-size:1.35rem;color:#1b1b1b;background:#fff;border:4px solid var(--blue);border-radius:40px;padding:18px 28px;outline:none}
+input::placeholder{color:#333}
+input:focus-visible,button:focus-visible{outline:4px solid var(--fg);outline-offset:3px}
+.show{position:absolute;right:18px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--link);font:inherit;font-weight:800;font-size:1rem;padding:10px;cursor:pointer}
+.err{min-height:72px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--err);font-weight:800;font-size:1.2rem;margin:0}
+.spacer{flex:1;min-height:20px}
+.big{width:100%;height:84px;background:var(--btn-bg);color:var(--btn-fg);border:4px solid var(--blue);border-radius:40px;font:inherit;font-size:1.5rem;font-weight:800;cursor:pointer}
+.link{background:none;border:0;color:var(--fg);font:inherit;font-size:1.2rem;text-decoration:underline;margin:14px 0 6px;padding:12px;cursor:pointer;text-align:center}
+.finger{width:220px;height:220px;border-radius:40px;border:8px solid var(--blue);background:none;color:var(--fg);display:flex;align-items:center;justify-content:center;margin:20px 0 40px;cursor:pointer}
+.finger svg{width:150px;height:150px}
+.note{font-size:.75rem;color:var(--note);text-align:center;margin:10px 0 0}
+.ok{font-size:1.35rem;text-align:center;margin:0 0 40px}
+#menu{align-items:stretch;gap:18px}
+.block{flex:1;min-height:200px;background:none;border:4px solid var(--blue);border-radius:40px;color:var(--fg);font:inherit;font-size:1.6rem;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer}
+.block svg{width:120px;height:120px;color:var(--icon)}
+.bigstar{width:130px;height:130px;color:var(--blue);margin:0 0 18px}
+.qw{font-size:1.5rem;font-weight:800;text-align:center;margin:0 0 12px}
+.q{font-size:1.3rem;text-align:center;margin:0;min-height:90px}
+.yn{display:flex;gap:14px;width:100%}
+.yn .block{min-height:230px;font-size:2.2rem;letter-spacing:.12em}
+.list{display:flex;flex-direction:column;gap:12px;width:100%}
+.opt{min-height:72px;background:none;border:4px solid var(--blue);border-radius:36px;color:var(--fg);font:inherit;font-size:1.3rem;font-weight:800;padding:12px 20px;text-align:center;cursor:pointer;width:100%}
+.opt[aria-current="true"]{background:var(--blue);color:#fff}
+.cur{font-size:1.4rem;font-weight:800;text-align:center;min-height:90px;margin:8px 0}
+.ctl{display:flex;gap:14px;width:100%}
+.ctl .block{min-height:120px;font-size:1.5rem}
+.steps{width:100%;font-size:1.05rem;padding-left:26px;margin:12px 0}
+.steps li{margin-bottom:6px}
+.steps li[aria-current]{font-weight:800;color:var(--blue)}
+#map-view{width:100%;height:320px;border:4px solid var(--blue);border-radius:28px;margin-bottom:14px;overflow:hidden}
+.pin{font-size:28px;line-height:30px;background:none;border:0}
+summary{cursor:pointer;font-size:1.1rem;padding:12px 0}
+</style>
+</head>
+<body>
+<main>
+<div class="top">
+  <p class="cloud" id="asst-note" role="status" aria-live="polite"></p>
+  <button class="star" id="asst" aria-pressed="true" data-al="asst_label">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1l1.6 8.4L21 4.6l-4.8 6.4L23 12l-6.8 1 4.8 6.4-7.4-4.8L12 23l-1.6-8.4L3 19.4l4.8-6.4L1 12l6.8-1L3 4.6l7.4 4.8z"/></svg>
+  </button>
+</div>
+
+<section id="home">
+  <h1>Mundo V</h1>
+  <button class="finger" data-go="login" data-al="fp_label">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M12 11v3.5c0 2-.5 3.8-1.5 5.5"/><path d="M8.5 12a3.5 3.5 0 0 1 7 0v2c0 1.8-.3 3.5-1 5"/><path d="M5.5 12a6.5 6.5 0 0 1 13 0v1.5c0 1.6-.2 3-.6 4.5"/><path d="M3.5 10.5A9 9 0 0 1 12 3a9 9 0 0 1 8.5 7.5"/></svg>
+  </button>
+  <button class="big" data-go="login" data-i="login_btn"></button>
+  <button class="link" data-go="register" data-i="link_create"></button>
+  <div class="spacer"></div>
+</section>
+
+<section id="register" hidden>
+  <h1 data-i="create_title"></h1>
+  <div class="field"><label for="r-tel" data-i="phone"></label><input id="r-tel" type="tel" inputmode="tel" autocomplete="tel" data-ph="phone"></div>
+  <div class="field"><label for="r-pass" data-i="pass"></label><input id="r-pass" type="password" autocomplete="new-password" data-ph="pass" style="padding-right:110px"><button class="show" type="button" data-show="r-pass"></button></div>
+  <p class="err" role="alert" aria-live="assertive" id="r-err"></p>
+  <div class="spacer"></div>
+  <button class="big" id="r-btn" data-i="create"></button>
+  <button class="link" data-go="login" data-i="link_have"></button>
+</section>
+
+<section id="login" hidden>
+  <h1 data-i="login_title"></h1>
+  <div class="field"><label for="l-tel" data-i="phone"></label><input id="l-tel" type="tel" inputmode="tel" autocomplete="tel" data-ph="phone"></div>
+  <div class="field"><label for="l-pass" data-i="pass"></label><input id="l-pass" type="password" autocomplete="current-password" data-ph="pass" style="padding-right:110px"><button class="show" type="button" data-show="l-pass"></button></div>
+  <p class="err" role="alert" aria-live="assertive" id="l-err"></p>
+  <div class="spacer"></div>
+  <button class="big" id="l-btn" data-i="login_btn"></button>
+  <button class="link" data-go="register" data-i="link_create"></button>
+</section>
+
+<section id="menu" hidden>
+  <h1 class="sr" data-i="menu_t"></h1>
+  <button class="block" id="m-set" data-al="settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="8.6" stroke-width="3" stroke-dasharray="2.25 2.25"/><circle cx="12" cy="12" r="7" stroke-width="3"/><circle cx="12" cy="12" r="2.6" stroke-width="2.4"/></svg>
+    <span data-i="settings"></span>
+  </button>
+  <button class="block" id="m-map" data-al="map">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 15l6-2 6 2 8-2-4 7-6 1-6-1z" fill="#7dc94f"/><path d="M8 13l6 2-2 6-6-1z" fill="#4a9fc9"/><path d="M12 2a4.2 4.2 0 0 0-4.2 4.2C7.8 9.6 12 15 12 15s4.2-5.4 4.2-8.8A4.2 4.2 0 0 0 12 2z" fill="#d00"/><circle cx="12" cy="6.2" r="1.6" fill="#900"/></svg>
+    <span data-i="map"></span>
+  </button>
+</section>
+
+<section id="settings" hidden>
+  <h1 class="sr" data-i="settings"></h1>
+  <svg class="bigstar" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1l1.6 8.4L21 4.6l-4.8 6.4L23 12l-6.8 1 4.8 6.4-7.4-4.8L12 23l-1.6-8.4L3 19.4l4.8-6.4L1 12l6.8-1L3 4.6l7.4 4.8z"/></svg>
+  <p class="qw" data-i="q_what"></p>
+  <p class="q" id="q" role="status" aria-live="polite"></p>
+  <div class="spacer"></div>
+  <div class="yn"><button class="block" id="yes" data-i="yes"></button><button class="block" id="no" data-i="no"></button></div>
+  <button class="link" data-go="menu" data-i="back_menu"></button>
+</section>
+
+<section id="langs" hidden>
+  <h1 data-i="q_pick"></h1>
+  <div class="list" id="lang-list"></div>
+  <div class="spacer"></div>
+  <button class="link" id="lang-cancel" data-i="cancel"></button>
+</section>
+
+<section id="map" hidden>
+  <h1 class="sr" data-i="map"></h1>
+  <div class="field"><label for="m-q" data-i="m_q"></label><input id="m-q" type="search" data-ph="m_q"></div>
+  <button class="big" id="m-go" data-i="m_search"></button>
+  <p class="q" id="m-status" role="status" aria-live="polite" style="margin-top:14px;min-height:60px"></p>
+  <div class="list" id="m-res"></div>
+  <div id="m-nav" hidden style="width:100%">
+    <div id="map-view" aria-hidden="true"></div>
+    <p class="cur" id="m-cur"></p>
+    <button class="big" id="where" data-i="where"></button>
+    <div class="ctl" style="margin-top:14px"><button class="block" id="pause" data-i="pause"></button><button class="block" id="repeat" data-i="repeat"></button></div>
+    <details><summary data-i="steps_txt"></summary><ol class="steps" id="m-steps"></ol></details>
+  </div>
+  <div class="spacer"></div>
+  <button class="link" data-go="menu" data-i="back_menu"></button>
+</section>
+
+<p class="note" data-i="note"></p>
+</main>
+
+<script>
+(function(){
+var T={
+es:{create_title:"Crear cuenta",login_title:"Iniciar sesión",phone:"Teléfono:",pass:"Contraseña:",show:"Mostrar",hide:"Ocultar",show_a:"Mostrar contraseña",hide_a:"Ocultar contraseña",create:"Crear",login_btn:"Iniciar sesión",link_create:"Crear una cuenta",link_have:"¿Ya tienes cuenta? Iniciar sesión",err:"Error: ",e_both:"escribe tu teléfono y tu contraseña.",e_tel:"el teléfono es obligatorio.",e_pass:"la contraseña es obligatoria.",e_telbad:"escribe un teléfono válido de 10 a 15 dígitos.",e_short:"la contraseña debe tener al menos 8 caracteres.",e_exists:"ese teléfono ya está registrado.",e_bad:"teléfono o contraseña incorrectos.",created:"Cuenta creada correctamente. Ya puedes iniciar sesión.",settings:"Ajustes",map:"Mapa",menu_t:"Menú principal",soon:"Esta pantalla estará disponible próximamente.",back_menu:"Volver al menú",asst_on:"Asistente siempre activo",asst_off:"Asistente apagado",asst_label:"Asistente",fp_label:"Huella. Toca para ir a iniciar sesión",q_what:"¿Qué vamos a configurar?",q_theme:"¿Quieres cambiar el modo de pantalla? Ahora está en modo {x}.",q_lang:"¿Quieres cambiar el idioma? Ahora es {x}.",q_out:"¿Quieres cerrar sesión?",q_other:"¿Quieres iniciar sesión con otra cuenta?",yes:"SÍ",no:"NO",mode_dark:"oscuro",mode_light:"claro",d_theme:"Modo {x} activado.",d_lang:"Idioma cambiado a {x}.",d_out:"Sesión cerrada.",d_other:"Inicia sesión con otra cuenta.",d_end:"Ajustes terminados.",q_pick:"Elige un idioma.",cancel:"Cancelar",m_q:"Buscar un lugar",m_search:"Buscar",m_empty:"Escribe el lugar que buscas.",m_searching:"Buscando…",m_none:"No encontré resultados. Intenta con otro nombre.",m_found:"{x} resultados. Elige un lugar de la lista.",m_locating:"Obteniendo tu ubicación…",m_loc:"No pude obtener tu ubicación. Revisa los permisos.",m_route:"No pude calcular la ruta a pie.",m_net:"No hay conexión con el servicio de mapas.",m_sum:"Ruta a {p}: {d} caminando, unos {m} minutos.",pause:"Pausar",resume:"Reanudar",repeat:"Repetir",st_depart:"Empieza a caminar{on}. Sigue {d}.",st_turn:"{m}{on}. Camina {d}.",st_arrive:"Has llegado a tu destino.",on:"por",meters:"metros",km:"kilómetros",m_left:"Gira a la izquierda",m_right:"Gira a la derecha",m_slight_left:"Gira ligeramente a la izquierda",m_slight_right:"Gira ligeramente a la derecha",m_sharp_left:"Gira cerrado a la izquierda",m_sharp_right:"Gira cerrado a la derecha",m_straight:"Sigue recto",m_uturn:"Da la vuelta",where:"¿Dónde estoy?",m_here:"Estás en {s}.",m_now:"Ahora estás en {s}.",m_nostreet:"Estás en un tramo sin nombre de calle.",m_left_to:"Te faltan {d} para llegar.",steps_txt:"Ver indicaciones escritas",note:"Vista previa de diseño · no conectada al servidor"},
+en:{create_title:"Create account",login_title:"Log in",phone:"Phone:",pass:"Password:",show:"Show",hide:"Hide",show_a:"Show password",hide_a:"Hide password",create:"Create",login_btn:"Log in",link_create:"Create an account",link_have:"Already have an account? Log in",err:"Error: ",e_both:"enter your phone and your password.",e_tel:"the phone is required.",e_pass:"the password is required.",e_telbad:"enter a valid phone of 10 to 15 digits.",e_short:"the password must have at least 8 characters.",e_exists:"that phone is already registered.",e_bad:"incorrect phone or password.",created:"Account created. You can now log in.",settings:"Settings",map:"Map",menu_t:"Main menu",soon:"This screen will be available soon.",back_menu:"Back to menu",asst_on:"Assistant always on",asst_off:"Assistant off",asst_label:"Assistant",fp_label:"Fingerprint. Tap to go to log in",q_what:"What are we going to set up?",q_theme:"Do you want to change the screen mode? It is now in {x} mode.",q_lang:"Do you want to change the language? It is now {x}.",q_out:"Do you want to log out?",q_other:"Do you want to log in with another account?",yes:"YES",no:"NO",mode_dark:"dark",mode_light:"light",d_theme:"{x} mode on.",d_lang:"Language changed to {x}.",d_out:"Logged out.",d_other:"Log in with another account.",d_end:"Settings finished.",q_pick:"Choose a language.",cancel:"Cancel",m_q:"Search for a place",m_search:"Search",m_empty:"Type the place you are looking for.",m_searching:"Searching…",m_none:"No results found. Try another name.",m_found:"{x} results. Choose a place from the list.",m_locating:"Getting your location…",m_loc:"I could not get your location. Check the permissions.",m_route:"I could not calculate the walking route.",m_net:"No connection to the map service.",m_sum:"Route to {p}: {d} on foot, about {m} minutes.",pause:"Pause",resume:"Resume",repeat:"Repeat",st_depart:"Start walking{on}. Continue {d}.",st_turn:"{m}{on}. Walk {d}.",st_arrive:"You have arrived at your destination.",on:"on",meters:"meters",km:"kilometers",m_left:"Turn left",m_right:"Turn right",m_slight_left:"Turn slightly left",m_slight_right:"Turn slightly right",m_sharp_left:"Turn sharp left",m_sharp_right:"Turn sharp right",m_straight:"Continue straight",m_uturn:"Make a U-turn",where:"Where am I?",m_here:"You are on {s}.",m_now:"You are now on {s}.",m_nostreet:"You are on an unnamed stretch.",m_left_to:"You have {d} left to go.",steps_txt:"Show written directions",note:"Design preview · not connected to the server"},
+pt:{create_title:"Criar conta",login_title:"Entrar",phone:"Telefone:",pass:"Senha:",show:"Mostrar",hide:"Ocultar",show_a:"Mostrar senha",hide_a:"Ocultar senha",create:"Criar",login_btn:"Entrar",link_create:"Criar uma conta",link_have:"Já tem conta? Entrar",err:"Erro: ",e_both:"digite seu telefone e sua senha.",e_tel:"o telefone é obrigatório.",e_pass:"a senha é obrigatória.",e_telbad:"digite um telefone válido de 10 a 15 dígitos.",e_short:"a senha deve ter pelo menos 8 caracteres.",e_exists:"esse telefone já está cadastrado.",e_bad:"telefone ou senha incorretos.",created:"Conta criada com sucesso. Agora você pode entrar.",settings:"Configurações",map:"Mapa",menu_t:"Menu principal",soon:"Esta tela estará disponível em breve.",back_menu:"Voltar ao menu",asst_on:"Assistente sempre ativo",asst_off:"Assistente desligado",asst_label:"Assistente",fp_label:"Impressão digital. Toque para entrar",q_what:"O que vamos configurar?",q_theme:"Quer mudar o modo de tela? Agora está no modo {x}.",q_lang:"Quer mudar o idioma? Agora é {x}.",q_out:"Quer sair da conta?",q_other:"Quer entrar com outra conta?",yes:"SIM",no:"NÃO",mode_dark:"escuro",mode_light:"claro",d_theme:"Modo {x} ativado.",d_lang:"Idioma alterado para {x}.",d_out:"Sessão encerrada.",d_other:"Entre com outra conta.",d_end:"Configurações concluídas.",q_pick:"Escolha um idioma.",cancel:"Cancelar",m_q:"Buscar um lugar",m_search:"Buscar",m_empty:"Digite o lugar que procura.",m_searching:"Buscando…",m_none:"Não encontrei resultados. Tente outro nome.",m_found:"{x} resultados. Escolha um lugar da lista.",m_locating:"Obtendo sua localização…",m_loc:"Não consegui obter sua localização. Verifique as permissões.",m_route:"Não consegui calcular a rota a pé.",m_net:"Sem conexão com o serviço de mapas.",m_sum:"Rota para {p}: {d} a pé, cerca de {m} minutos.",pause:"Pausar",resume:"Retomar",repeat:"Repetir",st_depart:"Comece a caminhar{on}. Siga {d}.",st_turn:"{m}{on}. Caminhe {d}.",st_arrive:"Você chegou ao seu destino.",on:"por",meters:"metros",km:"quilômetros",m_left:"Vire à esquerda",m_right:"Vire à direita",m_slight_left:"Vire levemente à esquerda",m_slight_right:"Vire levemente à direita",m_sharp_left:"Faça uma curva fechada à esquerda",m_sharp_right:"Faça uma curva fechada à direita",m_straight:"Siga em frente",m_uturn:"Faça o retorno",where:"Onde estou?",m_here:"Você está em {s}.",m_now:"Agora você está em {s}.",m_nostreet:"Você está em um trecho sem nome de rua.",m_left_to:"Faltam {d} para chegar.",steps_txt:"Ver instruções escritas",note:"Pré-visualização do design · não conectada ao servidor"}
+};
+var LN={es:"Español",en:"English",pt:"Português"}, ORDER=["es","en","pt"], VOICE={es:"es-MX",en:"en-US",pt:"pt-BR"};
+var STEPS=["theme","lang","out","other"];
+var users={}, session=null, lang="es", theme="dark", asst=true, step=0, cur="home";
+try{users=JSON.parse(localStorage.getItem("mv_users")||"{}");}catch(e){}
+try{var p=JSON.parse(localStorage.getItem("mv_prefs")||"{}");if(T[p.lang])lang=p.lang;if(p.theme==="light"||p.theme==="dark")theme=p.theme;if(typeof p.asst==="boolean")asst=p.asst;}catch(e){}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function prefs(){save("mv_prefs",{lang:lang,theme:theme,asst:asst});}
+function $(id){return document.getElementById(id);}
+function t(k){return T[lang][k];}
+var resume=false,pos=null,watchId=null,steps=[],si=0,paused=false,lastSay=0,ci=-1,lastStreet="",lmap=null,uMark=null,dMark=null,rLine=null;
+function f(k,x){var s=t(k);if(x!==null&&typeof x==="object"){for(var a in x)s=s.split("{"+a+"}").join(x[a]);}else s=s.split("{x}").join(x);return s;}
+function digits(s){return s.replace(/\D/g,"");}
+
+function speak(txt){
+  if(!asst||!txt||!("speechSynthesis" in window))return;
+  lastSay=Date.now();try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(txt);u.lang=VOICE[lang];speechSynthesis.speak(u);}catch(e){}
+}
+function question(){
+  var k=STEPS[step];
+  if(k==="theme")return f("q_theme",t(theme==="dark"?"mode_dark":"mode_light"));
+  if(k==="lang")return f("q_lang",LN[lang]);
+  return t(k==="out"?"q_out":"q_other");
+}
+function refresh(){
+  document.documentElement.lang=lang;
+  document.documentElement.setAttribute("data-theme",theme);
+  document.querySelectorAll("[data-i]").forEach(function(e){e.textContent=t(e.dataset.i);});
+  document.querySelectorAll("[data-ph]").forEach(function(e){e.placeholder=t(e.dataset.ph);});
+  document.querySelectorAll("[data-al]").forEach(function(e){e.setAttribute("aria-label",t(e.dataset.al));});
+  document.querySelectorAll("[data-show]").forEach(function(b){
+    var hid=$(b.dataset.show).type==="password";
+    b.textContent=t(hid?"show":"hide");b.setAttribute("aria-label",t(hid?"show_a":"hide_a"));
+  });
+  $("asst-note").textContent=t(asst?"asst_on":"asst_off");
+  $("asst").setAttribute("aria-pressed",String(asst));
+  $("asst").style.opacity=asst?1:.4;
+  $("pause").textContent=t(paused?"resume":"pause");
+  document.querySelectorAll("#lang-list .opt").forEach(function(b){b.setAttribute("aria-current",String(b.lang===lang));});
+  if(steps.length)renderSteps();
+  $("q").textContent=question();
+  ["r-err","l-err"].forEach(function(i){$(i).textContent="";});
+}
+function go(name,say){
+  cur=name;
+  ["home","register","login","menu","settings","langs","map"].forEach(function(n){$(n).hidden=n!==name;});
+  if(name==="settings"){if(!resume)step=0;resume=false;}
+  if(name!=="map")stopNav();
+  refresh();
+  var h=$(name).querySelector("h1");if(h){h.setAttribute("tabindex","-1");h.focus();}
+  if(say===undefined){
+    var titles={home:"Mundo V",register:t("create_title"),login:t("login_title"),menu:t("menu_t"),map:t("map"),langs:t("q_pick"),settings:t("q_what")+" "+question()};
+    say=titles[name];
+  }
+  speak(say);
+}
+document.querySelectorAll("[data-go]").forEach(function(b){b.addEventListener("click",function(){go(b.dataset.go);});});
+document.querySelectorAll("[data-show]").forEach(function(b){
+  b.addEventListener("click",function(){var i=$(b.dataset.show);i.type=i.type==="password"?"text":"password";refresh();});
+});
+function setErr(id,k){
+  var m=t("err")+t(k);$(id).textContent="";
+  setTimeout(function(){$(id).textContent=m;},30);speak(m);
+}
+async function hash(s){
+  try{var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));
+    return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}
+  catch(e){return btoa(s);}
+}
+
+$("r-btn").addEventListener("click",async function(){
+  var tel=digits($("r-tel").value),pw=$("r-pass").value;
+  if(!tel&&!pw)return setErr("r-err","e_both");
+  if(!tel)return setErr("r-err","e_tel");
+  if(!pw)return setErr("r-err","e_pass");
+  if(!/^\d{10,15}$/.test(tel))return setErr("r-err","e_telbad");
+  if(pw.length<8)return setErr("r-err","e_short");
+  if(users[tel])return setErr("r-err","e_exists");
+  users[tel]=await hash(pw);save("mv_users",users);
+  $("l-tel").value=tel;$("l-pass").value="";$("r-pass").value="";
+  go("login",t("created"));
+  $("l-err").textContent=t("created");
+});
+$("l-btn").addEventListener("click",async function(){
+  var tel=digits($("l-tel").value),pw=$("l-pass").value;
+  if(!tel||!pw)return setErr("l-err","e_both");
+  if(!users[tel]||users[tel]!==await hash(pw))return setErr("l-err","e_bad");
+  session=tel;$("l-pass").value="";go("menu");
+});
+
+$("m-set").addEventListener("click",function(){go("settings");});
+$("m-map").addEventListener("click",function(){go("map");});
+$("asst").addEventListener("click",function(){
+  asst=!asst;prefs();refresh();
+  if(asst)speak(t("asst_on"));else try{speechSynthesis.cancel();}catch(e){}
+});
+
+function next(msg){
+  step++;
+  if(step>=STEPS.length){step=0;go("menu",(msg+" "+t("d_end")).trim());return;}
+  refresh();speak((msg+" "+question()).trim());
+}
+$("yes").addEventListener("click",function(){
+  var k=STEPS[step],msg="";
+  if(k==="theme"){theme=theme==="dark"?"light":"dark";msg=f("d_theme",t(theme==="dark"?"mode_dark":"mode_light"));}
+  else if(k==="lang"){go("langs",t("q_pick")+" "+ORDER.map(function(c){return LN[c];}).join(", "));return;}
+  else{session=null;go(k==="out"?"home":"login",t(k==="out"?"d_out":"d_other"));return;}
+  prefs();next(msg);
+});
+$("no").addEventListener("click",function(){next("");});
+
+
+/* ---- Lista de idiomas ---- */
+function back(msg){
+  step++;
+  if(step>=STEPS.length){step=0;go("menu",(msg+" "+t("d_end")).trim());return;}
+  resume=true;go("settings",(msg+" "+question()).trim());
+}
+ORDER.forEach(function(c){
+  var b=document.createElement("button");b.className="opt";b.lang=c;b.textContent=LN[c];
+  b.addEventListener("click",function(){lang=c;prefs();back(f("d_lang",LN[c]));});
+  $("lang-list").appendChild(b);
+});
+$("lang-cancel").addEventListener("click",function(){back("");});
+
+/* ---- Mapa: OpenStreetMap (Nominatim para buscar, servidor de rutas a pie) ---- */
+function getPos(){return new Promise(function(ok,no){
+  if(!navigator.geolocation)return no();
+  navigator.geolocation.getCurrentPosition(function(p){pos={lat:p.coords.latitude,lon:p.coords.longitude};ok(pos);},no,{enableHighAccuracy:true,timeout:15000});
+});}
+function hav(a,b,c,d){var R=6371000,r=Math.PI/180,x=(c-a)*r,y=(d-b)*r,h=Math.sin(x/2)*Math.sin(x/2)+Math.cos(a*r)*Math.cos(c*r)*Math.sin(y/2)*Math.sin(y/2);return 2*R*Math.asin(Math.sqrt(h));}
+function status(msg,extra){$("m-status").textContent=msg;speak(msg+(extra?" "+extra:""));}
+function dist(n){return n>=1000?(n/1000).toFixed(1)+" "+t("km"):Math.round(n)+" "+t("meters");}
+function stepText(i){
+  var s=steps[i],m=s.maneuver,on=s.name?" "+t("on")+" "+s.name:"";
+  if(m.type==="arrive")return t("st_arrive");
+  if(m.type==="depart")return f("st_depart",{on:on,d:dist(s.distance)});
+  return f("st_turn",{m:t("m_"+(m.modifier||"straight").replace(" ","_")),on:on,d:dist(s.distance)});
+}
+function renderSteps(){
+  var o=$("m-steps");o.innerHTML="";
+  steps.forEach(function(x,i){var li=document.createElement("li");li.textContent=stepText(i);if(i===si)li.setAttribute("aria-current","step");o.appendChild(li);});
+  $("m-cur").textContent=steps.length?stepText(si):"";
+}
+function stopNav(){if(watchId!==null&&navigator.geolocation){navigator.geolocation.clearWatch(watchId);}watchId=null;}
+function startWatch(){
+  stopNav();if(!navigator.geolocation)return;
+  watchId=navigator.geolocation.watchPosition(function(p){
+    pos={lat:p.coords.latitude,lon:p.coords.longitude};
+    moveMarker();checkStreet();
+    if(paused||si>=steps.length-1)return;
+    var l=steps[si+1].maneuver.location;
+    if(hav(pos.lat,pos.lon,l[1],l[0])<30){si++;renderSteps();speak(stepText(si));if(si>=steps.length-1)stopNav();}
+  },function(){},{enableHighAccuracy:true});
+}
+async function search(){
+  var q=$("m-q").value.trim();
+  if(!q)return status(t("m_empty"));
+  stopNav();steps=[];$("m-nav").hidden=true;$("m-res").innerHTML="";
+  status(t("m_searching"));
+  try{
+    try{await getPos();}catch(e){}
+    var u="https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&accept-language="+lang+"&q="+encodeURIComponent(q);
+    if(pos)u+="&viewbox="+[pos.lon-.15,pos.lat+.15,pos.lon+.15,pos.lat-.15].join(",");
+    var r=await (await fetch(u)).json();
+    if(!r.length)return status(t("m_none"));
+    var names=[];
+    r.forEach(function(x,i){
+      var name=x.display_name.split(", ").slice(0,3).join(", ");names.push((i+1)+", "+name);
+      var b=document.createElement("button");b.className="opt";b.textContent=name;
+      b.addEventListener("click",function(){route({lat:+x.lat,lon:+x.lon,name:name});});
+      $("m-res").appendChild(b);
+    });
+    status(f("m_found",r.length),names.join(". "));
+  }catch(e){status(t("m_net"));}
+}
+async function route(p){
+  status(t("m_locating"));
+  try{await getPos();}catch(e){return status(t("m_loc"));}
+  try{
+    var u="https://routing.openstreetmap.de/routed-foot/route/v1/foot/"+pos.lon+","+pos.lat+";"+p.lon+","+p.lat+"?steps=true&overview=full&geometries=geojson";
+    var d=await (await fetch(u)).json();
+    if(d.code!=="Ok")return status(t("m_route"));
+    var rt=d.routes[0];steps=rt.legs[0].steps;si=0;paused=false;
+    $("m-res").innerHTML="";$("m-nav").hidden=false;drawMap(p,rt);
+    var sum=f("m_sum",{p:p.name,d:dist(rt.distance),m:Math.max(1,Math.round(rt.distance/80))});
+    $("m-status").textContent=sum;renderSteps();refresh();
+    speak(sum+" "+stepText(0));startWatch();
+  }catch(e){status(t("m_net"));}
+}
+function drawMap(p,rt){
+  ci=-1;lastStreet="";
+  if(typeof L==="undefined")return;
+  if(!lmap){
+    lmap=L.map("map-view",{zoomControl:false});
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(lmap);
+  }
+  [uMark,dMark,rLine].forEach(function(m){if(m)lmap.removeLayer(m);});
+  var pts=rt.geometry.coordinates.map(function(c){return [c[1],c[0]];});
+  rLine=L.polyline(pts,{color:"#0a8ae0",weight:6}).addTo(lmap);
+  dMark=L.marker([p.lat,p.lon],{icon:L.divIcon({html:"📍",className:"pin",iconSize:[30,30],iconAnchor:[15,28]})}).addTo(lmap);
+  uMark=L.circleMarker([pos.lat,pos.lon],{radius:9,color:"#fff",weight:3,fillColor:"#d00",fillOpacity:1}).addTo(lmap);
+  setTimeout(function(){lmap.invalidateSize();lmap.fitBounds(rLine.getBounds(),{padding:[30,30]});},60);
+}
+function moveMarker(){
+  if(uMark&&lmap){uMark.setLatLng([pos.lat,pos.lon]);lmap.setView([pos.lat,pos.lon],lmap.getZoom()<16?17:lmap.getZoom());}
+}
+function segDist(q,a,b){
+  var k=Math.cos(q.lat*Math.PI/180),x=(b[0]-a[0])*k,y=b[1]-a[1],px=(q.lon-a[0])*k,py=q.lat-a[1],l=x*x+y*y;
+  var t=l?Math.max(0,Math.min(1,(px*x+py*y)/l)):0,dx=px-t*x,dy=py-t*y;
+  return Math.sqrt(dx*dx+dy*dy)*111320;
+}
+function nearest(){
+  var best=-1,bd=1e9;
+  steps.forEach(function(s,i){
+    var c=s.geometry&&s.geometry.coordinates;if(!c)return;
+    for(var j=0;j<c.length-1;j++){var d=segDist(pos,c[j],c[j+1]);if(d<bd){bd=d;best=i;}}
+  });
+  return best;
+}
+function checkStreet(){
+  var i=nearest();if(i<0)return;ci=i;
+  var n=steps[i].name||"";
+  if(n&&n!==lastStreet){lastStreet=n;if(!paused&&Date.now()-lastSay>6000)speak(f("m_now",{s:n}));}
+}
+function where(){
+  if(!steps.length||!pos)return;
+  var i=nearest();if(i<0)i=si;
+  var n=steps[i].name,j=Math.min(i+1,steps.length-1),l=steps[j].maneuver.location;
+  var rem=hav(pos.lat,pos.lon,l[1],l[0]);
+  for(var k=j;k<steps.length;k++)rem+=steps[k].distance;
+  var msg=(n?f("m_here",{s:n}):t("m_nostreet"))+" "+f("m_left_to",{d:dist(rem)});
+  $("m-cur").textContent=msg;speak(msg);
+}
+$("where").addEventListener("click",where);
+$("m-go").addEventListener("click",search);
+$("m-q").addEventListener("keydown",function(e){if(e.key==="Enter")search();});
+$("pause").addEventListener("click",function(){
+  paused=!paused;
+  if(paused){try{speechSynthesis.cancel();}catch(e){}}else speak(stepText(si));
+  refresh();
+});
+$("repeat").addEventListener("click",function(){if(steps.length)speak(stepText(si));});
+
+refresh();
+})();
+</script>
+</body>
+</html>
